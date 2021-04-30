@@ -4,7 +4,7 @@ from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, Length, URL
 
 
-class Exercise(FlaskForm):
+class ExerciseForm(FlaskForm):
     """Form for adding a new exercise"""
     #Exercise name
     name = StringField('Name', validators=[DataRequired()])
@@ -13,7 +13,7 @@ class Exercise(FlaskForm):
     #Type of exercise
     category = SelectField('Category', choices=[('Barbell','Dumbbell','Machine/Other','Weighted Bodyweight','Assisted Bodyweight','Reps Only','Cardio','Duration')])
 
-class Routine(FlaskForm):
+class RoutineForm(FlaskForm):
     """Form for adding a new routine"""
     #Routine Name
     name = StringField('Name', validators=[DataRequired()])
