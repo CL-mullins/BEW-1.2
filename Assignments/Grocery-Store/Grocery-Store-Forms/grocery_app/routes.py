@@ -1,35 +1,33 @@
 from flask import Blueprint, request, render_template, redirect, url_for, flash
+from flask_login import login_user, logout_user, login_required, current_user
 from datetime import date, datetime
-from grocery_app.models import GroceryStore, GroceryItem
-# from grocery_app.forms import BookForm, AuthorForm, GenreForm
+
+from grocery_app.models import GroceryStore, GroceryItem, User
+from grocery_app.forms import GroceryStoreForm, GroceryItemForm, SignUpForm, LoginForm
+from grocery_app import bcrypt
+
 
 # Import app and db from events_app package so that we can run app
 from grocery_app import app, db
 
 main = Blueprint("main", __name__)
+auth = Blueprint("auth", __name__)
 
 ##########################################
-#           Routes                       #
+#           Main Routes                  #
 ##########################################
 
 @main.route('/')
 def homepage():
+    '''Route to deliver homepage to the front end'''
     all_stores = GroceryStore.query.all()
-    print(all_stores)
     return render_template('home.html', all_stores=all_stores)
 
 @main.route('/new_store', methods=['GET', 'POST'])
 @login_required
 def new_store():
-    # TODO: Create a GroceryStoreForm
-
-    # TODO: If form was submitted and was valid:
-    # - create a new GroceryStore object and save it to the database,
-    # - flash a success message, and
-    # - redirect the user to the store detail page.
-
-    # TODO: Send the form to the template and use it to render the form fields
-   form = GroceryStoreForm()
+    '''Route to deliver form inputs for user to enter a new store'''
+    form = GroceryStoreForm()
 
     if form.validate_on_submit():
       new_store = GroceryStore(
@@ -45,18 +43,10 @@ def new_store():
 
     return render_template('new_store.html', form=form)
 
-
 @main.route('/new_item', methods=['GET', 'POST'])
 @login_required
 def new_item():
-    # TODO: Create a GroceryItemForm
-
-    # TODO: If form was submitted and was valid:
-    # - create a new GroceryItem object and save it to the database,
-    # - flash a success message, and
-    # - redirect the user to the item detail page.
-
-    # TODO: Send the form to the template and use it to render the form fields
+    '''Route to deliver form inputs for user to enter a new item'''
     form = GroceryItemForm()
     
     if form.validate_on_submit():
@@ -79,14 +69,7 @@ def new_item():
 @main.route('/store/<store_id>', methods=['GET', 'POST'])
 @login_required
 def store_detail(store_id):
-    # TODO: Create a GroceryStoreForm and pass in `obj=store`
-
-    # TODO: If form was submitted and was valid:
-    # - update the GroceryStore object and save it to the database,
-    # - flash a success message, and
-    # - redirect the user to the store detail page.
-
-    # TODO: Send the form to the template and use it to render the form fields
+    '''Route to deliver store details by ID'''
     store = GroceryStore.query.get(store_id)
 
     form = GroceryStoreForm(obj=store)
@@ -105,14 +88,7 @@ def store_detail(store_id):
 @main.route('/item/<item_id>', methods=['GET', 'POST'])
 @login_required
 def item_detail(item_id):
-    # TODO: Create a GroceryItemForm and pass in `obj=item`
-
-    # TODO: If form was submitted and was valid:
-    # - update the GroceryItem object and save it to the database,
-    # - flash a success message, and
-    # - redirect the user to the item detail page.
-
-    # TODO: Send the form to the template and use it to render the form fields
+    '''Route to deliver item details by ID'''
     item = GroceryItem.query.get(item_id)
     form = GroceryItemForm(obj=item)
 
@@ -148,17 +124,13 @@ def shopping_list():
     shopping_list = current_user.shopping_list_items
     return render_template('shopping_list.html', shopping_list=shopping_list)
 
-
-###########################
-#        Auth Routes      #
-###########################
-
-auth = Blueprint("auth", __name__)
-
+##########################################
+#           Auth Routes                  #
+##########################################
 
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
-    print('in signup')
+    '''Route to let a user make an account'''
     form = SignUpForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -169,14 +141,13 @@ def signup():
         db.session.add(user)
         db.session.commit()
         flash('Account Created.')
-        print('created')
         return redirect(url_for('auth.login'))
-    print(form.errors)
     return render_template('signup.html', form=form)
 
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    '''Route to let a user login'''
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
@@ -187,8 +158,7 @@ def login():
     return render_template('login.html', form=form)
 
 @auth.route('/logout')
-@login_required
 def logout():
+    '''Route to let a user logout'''
     logout_user()
     return redirect(url_for('main.homepage'))
-

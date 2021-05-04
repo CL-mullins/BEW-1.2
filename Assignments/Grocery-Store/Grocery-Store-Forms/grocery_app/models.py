@@ -1,7 +1,7 @@
 from sqlalchemy_utils import URLType
-
 from grocery_app import db
 from grocery_app.utils import FormEnum
+from flask_login import UserMixin
 
 class ItemCategory(FormEnum):
     """Categories of grocery items."""
@@ -13,7 +13,7 @@ class ItemCategory(FormEnum):
     OTHER = 'Other'
 
 class GroceryStore(db.Model):
-    """Grocery Store model."""
+    ''' GroceryStore Model '''
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80), nullable=False)
     address = db.Column(db.String(200), nullable=False)
@@ -27,14 +27,14 @@ class GroceryStore(db.Model):
     def __repr__(self):
         return f'<Store: {self.title}>'
 
-
 class GroceryItem(db.Model):
-    """Grocery Item model."""
+    ''' GroceryItem Model '''
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
     price = db.Column(db.Float(precision=2), nullable=False)
     category = db.Column(db.Enum(ItemCategory), default=ItemCategory.OTHER)
     photo_url = db.Column(URLType)
+    # Grocery Store Foreign Key
     store_id = db.Column(
         db.Integer, db.ForeignKey('grocery_store.id'), nullable=False)
     store = db.relationship('GroceryStore', back_populates='items')
@@ -56,3 +56,8 @@ class User(UserMixin, db.Model):
 
     def __repr__(self):
         return f'{self.username}'
+
+user_groceryItem_table = db.Table('user_item',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+    db.Column('grocery_item_id', db.Integer, db.ForeignKey('grocery_item.id'))
+)
